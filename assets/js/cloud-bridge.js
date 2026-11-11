@@ -1,0 +1,4 @@
+// Điền URL /exec được phép sử dụng tại đây. Không đưa token bí mật vào frontend.
+export const GAS_EXEC_URL='';
+export const hasCloud=()=>/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(GAS_EXEC_URL);
+export async function api(action,payload={},timeout=18000){if(!hasCloud())throw Error('Chưa cấu hình URL GAS /exec');let ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),timeout);try{let r=await fetch(GAS_EXEC_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({action,payload}),cache:'no-store',credentials:'omit',redirect:'follow',signal:ctl.signal});if(!r.ok)throw Error('HTTP '+r.status);let json;try{json=await r.json()}catch{throw Error('Phản hồi từ GAS không phải JSON hợp lệ')}if(!json||json.ok!==true)throw Error(json?.error?.message||'GAS từ chối yêu cầu');return json.data;}catch(e){if(e.name==='AbortError')throw Error('Quá thời gian kết nối GAS');throw e}finally{clearTimeout(timer)}}
